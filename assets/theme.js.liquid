@@ -1882,11 +1882,52 @@
     ProductView.prototype.setupSelectors = function() {
       var currentLabelWidth, enableHistory, firstVariant, index, j, k, l, label, labelWidth, labels, len, len1, len2, option, optionSelectors, ref, ref1, variant;
       enableHistory = $(document.body).hasClass("template-product") && this.variants.length > 1;
-      optionSelectors = new Shopify.OptionSelectors("product-variants-" + this.productId, {
+if (window.wh_customer_tags){
+ function wh_product_hash(product) {
+  var wh_discount_js = window.wh_discount_value;
+  var variant_price,wh_compare_js_price;
+
+  jQuery.each(product.variants, function(i, variant){
+    wh_compare_js_price = variant.compare_at_price
+    if ((wh_compare_js_price == null) || (wh_compare_js_price == 0)) {
+      wh_compare_js_price = variant.price;
+    }
+
+    v_price = wh_compare_js_price * wh_discount_js;
+    if (v_price > variant.price){v_price = variant.price}
+    if (window.wh_metafields[variant.id]){
+      variant.price = window.wh_metafields[variant.id];
+    } else {
+      variant.price = v_price;
+    }
+
+    if ((wh_compare_js_price > variant.price) || (window.wh_metafields[variant.id] && wh_discount_js == 1)) {
+      variant.compare_at_price = wh_compare_js_price
+    }
+
+  });
+  product.price = product.variants[0].price
+  product.compare_at_price = product.variants[0].compare_at_price
+  product.compare_at_price_min = product.variants[0].compare_at_price_min
+  product.compare_at_price_max = product.variants[0].compare_at_price_max
+  return product
+}
+
+ optionSelectors = new Shopify.OptionSelectors("product-variants-" + this.productId, {
+        product: wh_product_hash(this.product),
+        onVariantSelected: this.selectCallback,
+        enableHistoryState: enableHistory
+      });
+
+} else {
+
+ optionSelectors = new Shopify.OptionSelectors("product-variants-" + this.productId, {
         product: this.product,
         onVariantSelected: this.selectCallback,
         enableHistoryState: enableHistory
       });
+
+}      
       firstVariant = this.isQuickShop ? this.$el.data("variant-id") : FirstVariant[this.productId];
       optionSelectors.selectVariant(firstVariant);
       {% if settings.linked-options %};
