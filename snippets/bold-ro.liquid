@@ -1,3 +1,6 @@
+{% if customer.tags.size > 0 %}
+{% else %}
+
 <div class='product_rp_div p{{ product.id }}'></div>
 <a class="btn btn-shopify small {{ product.id }}_custom_button button" data-toggle="modal" data-target="#myModal" style="display:none;">Add to cart</a>
  
@@ -74,3 +77,5 @@
     }
   });
 </script>
+
+{% endif %}

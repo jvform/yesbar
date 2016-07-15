@@ -1,0 +1,26 @@
+<h1 class="page-title">{{ 'collections.listing.header' | t }}</h1>
+
+{% include 'breadcrumbs' %}
+
+{% assign using-linklist = false %}
+{% if linklists['all-collections'] and linklists['all-collections'].links.size > 0 %}
+  {% assign using-linklist = true %}
+{% endif %}
+
+<div class="collections-list rows-of-{{ settings.collections-per-row }}">
+  {% if using-linklist %}
+    {% for link in linklists['all-collections'].links %}
+    <!-- locksmith:v3({% include 'locksmith-variables', locksmith_scope: 'subject', locksmith_subject: link %} {% unless locksmith_locked and locksmith_access_denied and locksmith_manual_lock == false %}) -->
+{% include 'collection-list-item' with 'linklist' %}
+<!-- locksmith:v3({% endunless %}) -->{% endfor %}
+  {% else %}
+    {% paginate collections by 4 %}
+      {% for collection in collections %}
+      <!-- locksmith:v3({% include 'locksmith-variables', locksmith_scope: 'subject', locksmith_subject: collection %} {% unless locksmith_locked and locksmith_access_denied and locksmith_manual_lock == false %}) -->
+        {% include 'collection-list-item' %}
+      <!-- locksmith:v3({% endunless %}) -->
+      {% endfor %}
+      {% include 'pagination' %}
+    {% endpaginate %}
+  {% endif %}
+</div>

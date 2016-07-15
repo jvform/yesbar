@@ -8,7 +8,7 @@
 
 {% if cart.item_count > 0 %}
 
-  <form class="cart-form" action="/cart" method="post">
+  <form class="cart-form" action="/cart" method="post"><input type="hidden" name="discount" id="discount" value="" />
 
     <table class="cart-items">
       <thead>
@@ -23,7 +23,9 @@
       <tbody>
         <script>mixed_cart = false;</script>
         {% assign show_paypal = true %}
-        {% for item in cart.items %}
+        {% for item in cart.items %} 
+ {% include 'wh_calculate_discount' with item.product %} 
+ {% include 'wh_variant' with item.variant %}
         
 {% include 'bold-ro-price-fix' %}
 {% assign prod_index = forloop.index0 %}
@@ -46,7 +48,8 @@
                   <span class="cart-variant">{{ item.variant.title }}</span>
                 {% endunless %}
 
-            
+{% if customer.tags.size > 0 %}
+{% else %}            
 <!-- bold-ro-liquid -->
 {% if item.properties.frequency_num %}
   <script>mixed_cart = true;</script>
@@ -70,14 +73,25 @@
   <span class="discounted_price_in_cart">{{ item.properties._ro_unformatted_price | money }}</span> <span class="bold_ro_each">each</span>
 {% endif %}
 <!-- bold-ro-liquid -->
+{% endif %}
+
               </div>
 
+{% if customer.tags.size > 0 %}
+              <a class="remove" href="/cart/change?line={{ forloop.index }}&amp;quantity=0">&#xe603;</a>
+            </td>
+            <td class="price" data-title="{{ 'general.general.price' | t }}"><span class="money">{{ wh_v_price | money }}</span></td>
+            <td class="quantity" data-title="{{ 'general.general.quantity' | t }}"><input type="text" name="updates[]" id="updates_{{ item.id }}" {% unless item.variant.inventory_management == blank or item.variant.inventory_policy == 'continue' %} max='{{ item.variant.inventory_quantity }}' {% endunless %} value="{{ item.quantity }}"></td>
+            <td class="total last" data-title="{{ 'general.general.total' | t }}"><span class="money">{{ item.quantity | times: wh_v_price | money }}</span></td>
+          </tr>
+{% else %}
               <a class="remove bold-ro-remove" href="/cart/change?line={{ forloop.index }}&amp;quantity=0">&#xe603;</a>
             </td>
             <td class="price" data-title="{{ 'general.general.price' | t }}"><span class="money">{{ ro_item_price | money }}</span></td>
-            <td class="quantity" data-title="{{ 'general.general.quantity' | t }}"><input type="text" name="updates[]" id="updates_{{ item.id }}" value="{{ item.quantity }}"></td>
+            <td class="quantity" data-title="{{ 'general.general.quantity' | t }}"><input type="text" name="updates[]" id="updates_{{ item.id }}" {% unless item.variant.inventory_management == blank or item.variant.inventory_policy == 'continue' %} max='{{ item.variant.inventory_quantity }}' {% endunless %} value="{{ item.quantity }}"></td>
             <td class="total last" data-title="{{ 'general.general.total' | t }}"><span class="money">{{ item.quantity | times: ro_item_price | money }}</span></td>
-          </tr>
+{% endif %} 
+         </tr>
         {% endfor %}
       </tbody>
 
@@ -93,7 +107,17 @@
       {% endif %}
 
       <div class="cart-totals">
+        {% if customer.tags.size > 0 %}
+        <p class="cart-price">
+        <span class="wh-original-cart-total">{{ cart.total_price | money }}</span>
+        <span class="wh-cart-total"></span>
+        <div class="additional-notes">
+          <span class="wh-minimums-note"></span>
+          <span class="wh-extra-note "></span>
+        </div>
+        {% else %}
         <p class="cart-price"><span class="money">{{ ro_cart_total | money }}</span></p>
+        {% endif %}
         {% if settings.cart-show-shipping-note %}
           <p class="cart-message">{{ 'cart.general.tax_and_shipping' | t }}</p> 
         {% endif %}
@@ -109,7 +133,10 @@
 <input name="phone" type="hidden" value="{{ customer.default_address.phone }}" > 
 <input name="province" type="hidden" value="{{ customer.default_address.province }}" > 
 <input name="zip" type="hidden" value="{{ customer.default_address.zip }}" >
-{% include 'bold-ro-cart' %}
+  {% if customer.tags.size > 0 %}
+  {% else %}
+  {% include 'bold-ro-cart' %}
+  {% endif %}
         <input class="cart-update button secondary" type="submit" name="update" value="{{ 'general.general.update' | t }}">
         <input class="cart-checkout button" type="submit" name="checkout" value="{{ 'cart.general.submit' | t }}">
 
@@ -146,4 +173,30 @@ $(document).on("click","[name='recurring_radio_btn']", function() {
     }
 });
 
-</script>
+</script>{% if customer.tags.size > 0 %}
+  {% include 'wh_cart' %}
+
+  <script>
+    //ensure cart is updated if quantities are changed so we can recalculate the discount
+    if (typeof ensureCorrectQuantites == "function"){
+      var checkoutElements = ["input[name='checkout']", "button[name='checkout']", "input[name='goto_pp']", "button[name='goto_pp']", "input[name='goto_gc']", "button[name='goto_gc']", "[href$='checkout']"];
+      window.cartToEnsure = {{ cart | json }}
+      for (var i = 0, len = checkoutElements.length; i < len; i++) {
+        var element = checkoutElements[i];
+        jQuery(element).bind("click", function(){          
+          return ensureCorrectQuantites(window.cartToEnsure, "#updates_{variant_id}");
+        })
+      }
+    }
+    
+    if (typeof ensureInStock == "function"){
+      var checkoutElements = ["input[name='checkout']", "button[name='checkout']", "input[name='goto_pp']", "button[name='goto_pp']", "input[name='goto_gc']", "button[name='goto_gc']", "[href$='checkout']"];
+      for (var i = 0, len = checkoutElements.length; i < len; i++) {
+        var element = checkoutElements[i];
+        jQuery(element).bind("click", function(){          
+          return ensureInStock();
+        })
+      }
+    }
+  </script>
+{% endif %}

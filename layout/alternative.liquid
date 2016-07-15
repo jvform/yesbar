@@ -4,16 +4,11 @@
 <!--[if IE 8]><html class="no-js ie8 lt-ie10 lt-ie9" lang="en"> <![endif]-->
 <!--[if IE 9 ]><html class="no-js ie9 lt-ie10"> <![endif]-->
 <!--[if (gt IE 9)|!(IE)]><!--> <html class="no-js"> <!--<![endif]-->
-
 <head>
-<script>window.wh_metafields = {};
- {% if customer.tags.size > 0 %} window.wh_customer_tags = true; {% endif %} 
- window.wh_discount_value = 1;
-</script>
-<script src="//code.jquery.com/jquery-1.12.0.min.js"></script>
+
   <meta charset="utf-8">
   <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
-<meta name="google-site-verification" content="_KyCeD-OjDsUsiNlr6Y6xopLEXCl1UQj1q-n5o801BU" />
+
   <title>
     {{ page_title }}
 
@@ -25,18 +20,15 @@
       &#8211; {{ 'general.pagination.page' | t: page_number: current_page }}
     {% endif %}
 
-    
     {% unless page_title contains shop.name %}
       &#8211; {{ shop.name }}
     {% endunless %}
   </title>
 
   {% if page_description %}
+    <!-- locksmith:v3({% include 'locksmith-variables' %}{% unless locksmith_locked and locksmith_access_denied and locksmith_manual_lock == false %}) -->
     <meta name="description" content="{{ page_description | escape }}" />
-  {% endif %}
-
-  {% if settings.favicon %}
-    <link rel="shortcut icon" href="{{ 'favicon.png' | asset_url }}" type="image/png" />
+    <!-- locksmith:v3({% endunless %}) -->
   {% endif %}
 
   <link rel="canonical" href="{{ canonical_url }}" />
@@ -47,13 +39,8 @@
   {% include 'social-meta' %}
 
   <!-- Theme CSS -->
+  {{ 'icons.css' | asset_url | stylesheet_tag }}
   {{ 'theme.scss.css' | asset_url | stylesheet_tag }}
-
-  {% if settings.custom-css != blank %}
-    <style>
-      {{ settings.custom-css }}
-    </style>
-  {% endif %}
 
   <!-- Third Party JS Libraries -->
   {{ 'modernizr-2.8.2.min.js' | asset_url | script_tag }}
@@ -61,50 +48,15 @@
   <!-- Theme object -->
   {% include 'theme-options' %}
 
-  <script>
-    window.products = {};
-  </script>
-{{ "font.css"  | asset_url | stylesheet_tag }}
 </head>
 
-<body class="{% if customer %}customer-logged-in{% endif %} template-{{ template | replace: '.', ' ' | truncatewords: 1, '' | handle }}  {% if settings.blog-promo %}has-promo{% endif %} {% if settings.related-products and collection.products.size > 1 and template contains 'product' %}has-related-products-{{ settings.related-products-position }}{% endif %} {% if settings.product-hover == 'quick-shop' %}has-quick-shop{% endif %} loading" >
-
-  {% if settings.product-hover == 'quick-shop' %}
-    {% include 'quick-shop' %}
-  {% endif %}
-
-  {% include 'header' %}
-  {% include 'navigation' %}
-
-  {% if template == 'index' and settings.slideshow %}
-    {% include 'home-slideshow' %}
-  {% endif %}
+<body class="template-index alternate-index-layout loading" >
 
   {% if template == 'index' and settings.masonry-features %}
-    {% include 'masonry-features' %}
-  {% endif %}
-
-  {% if template == 'index' %}
-    {% if settings.featured-collections or settings.featured-products or settings.instagram-widget or settings.twitter-widget %}
-      <div class="main-content">
-        {{ content_for_layout }}
-      </div>
-    {% endif %}
+    {% include 'masonry-features-alt' %}
   {% else %}
     <div class="main-content">
-      {% if template contains 'wholesalertemplate' %}
-      {% if customer %}
-      {% if customer.tags contains 'Wholesaler' %}
-      {{ content_for_layout }}
-      {% else %}
-      {% include 'wholesale-note' %}
-      {% endif %}
-      {% else %}
-      {% include 'wholesale-note' %}
-      {% endif %}
-      {% else%}
-      {{ content_for_layout }}
-{% endif %}
+      {% if true %}{% include 'locksmith' %}{% else %}{{ content_for_layout }}{% endif %}
     </div>
   {% endif %}
 
@@ -137,17 +89,5 @@
   {{ 'plugins.js'  | asset_url | script_tag }}
   {{ 'theme.js'  | asset_url | script_tag }}
 
-
-      {% if customer.tags.size > 0 and template != 'cart' %}
-        <script>
-          $(function(){
-            $(document).on('click', "input[name='checkout'], button[name='checkout'], input[name='goto_pp'], button[name='goto_pp'], input[name='goto_gc'], button[name='goto_gc'], [href$='checkout']", function(e){
-              e.preventDefault();
-              window.location = "/cart";
-            });
-          });
-        </script>
-      {% endif %}
-      
- </body>
+</body>
 </html>

@@ -3,6 +3,9 @@
 
   <div class="mini-cart-item-wrapper">
     {% for item in cart.items %}
+    {% include 'wh_calculate_discount' with item.product %}
+    {% include 'wh_variant' with item.variant %}
+
       <article class="mini-cart-item" data-variant="{{ item.variant.id }}" data-url="{{ item.url }}" data-title="{{ item.product.title }}">
 
         <figure class="mini-cart-item-image">
@@ -34,7 +37,7 @@
             {% endfor %}
           {% endif %}
 
-          <p class="mini-cart-item-price"><span class="money">{{ item.price | money }}</span></p>
+          <p class="mini-cart-item-price"><span class="money">{{ wh_v_price | money }}</span></p>
         </div>
 
       </article>
