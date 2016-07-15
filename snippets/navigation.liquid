@@ -26,13 +26,7 @@
           <input type="submit" value="&#xe606;" />
         </form>
       </li>
-      {% assign menu_handle = 'main-menu' %}
-{% if customer %}
-{% if customer.tags contains 'Wholesaler' %}
-{% assign menu_handle = 'main-menu-wholesale' %}
-{% endif %}
-{% endif %}
-{% for link in linklists[menu_handle].links %}
+      {% for link in linklists.main-menu.links %}
       <!-- locksmith:v3({% include 'locksmith-variables', locksmith_scope: 'subject', locksmith_subject: link %} {% unless locksmith_locked and locksmith_access_denied and locksmith_manual_lock == false %}) -->
         {% include 'has-dropdown' %}
         <li class="{% if hasDropdown %}has-dropdown{% elsif hasMegaNav %}has-mega-nav{% endif %} {% include 'for-looper' %}" {% if hasMegaNav %}data-mega-nav="true"{% endif %}>

@@ -50,8 +50,11 @@
 
         <div class="mini-cart-wrapper">
           <a class="cart-count" href="/cart"><span class="cart-count-text">{{ 'layout.header.cart' | t }}</span> (<span class="cart-count-number">{{ cart.item_count }}</span>)</a>
+          {% if customer.tags.size > 0 %}
+          {% else %}
           {% if cart.item_count > 0 %}
             {% include 'mini-cart' %}
+          {% endif %}
           {% endif %}
         </div>
         <a class="checkout-link" href="/checkout">{{ 'layout.header.checkout' | t }}</a>
