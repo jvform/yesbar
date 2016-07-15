@@ -1,0 +1,149 @@
+<h1 class="page-title">{{ 'cart.general.header' | t }}</h1>
+
+<!-- Bold: Quantity Breaks - Step 7 -->
+<div id="shappify-qty-cart-msg"></div>
+<!-- // end Bold code -->
+
+{% include 'breadcrumbs' %}
+
+{% if cart.item_count > 0 %}
+
+  <form class="cart-form" action="/cart" method="post">
+
+    <table class="cart-items">
+      <thead>
+        <tr>
+          <th class="first">{{ 'general.general.product' | t }}</th>
+          <th>{{ 'general.general.price' | t }}</th>
+          <th>{{ 'general.general.quantity' | t }}</th>
+          <th class="last" colspan="2">{{ 'general.general.total' | t }}</th>
+        </tr>
+      </thead>
+
+      <tbody>
+        <script>mixed_cart = false;</script>
+        {% assign show_paypal = true %}
+        {% for item in cart.items %}
+        
+{% include 'bold-ro-price-fix' %}
+{% assign prod_index = forloop.index0 %}
+<input type="hidden" name="product_id[{{ forloop.index0 }}]" value="{{ item.product.id }}">
+<input type="hidden" name="variant_id[{{ forloop.index0 }}]" value="{{ item.variant.id }}">
+<input type="hidden" name="quantity[{{ forloop.index0 }}]" value="{{ item.quantity }}">
+
+          <tr class="cart-item variant-{{ item.variant.id }} {% include 'for-looper' %}" data-variant="{{ item.variant.id }}" data-title="{{ item.product.title }}" data-url="{{ item.product.url }}">
+            <td class="product-item first">
+              <a class="image" href="{{ item.product.url }}">
+                <img alt="{{ item.image.alt | escape }}" src="{{ item | img_url: 'compact' }}">
+              </a>
+
+              <div class="product-item-details">
+                {% if settings.product-vendor %}
+                  <span class="cart-brand">{{ item.vendor | link_to_vendor }}</span>
+                {% endif %}
+                <span class="cart-title">{{ item.product.title | link_to: item.product.url }}</span>
+                {% unless item.variant.title == 'Default Title' %}
+                  <span class="cart-variant">{{ item.variant.title }}</span>
+                {% endunless %}
+
+            
+<!-- bold-ro-liquid -->
+{% if item.properties.frequency_num %}
+  <script>mixed_cart = true;</script>
+  <br>
+  <span class="bold_ro_every">Every</span>
+  <input type="hidden" name="{{ prod_index }}[number]" value="{{ item.properties.frequency_num }}" />
+  <span class="bold_ro_frequency_num">{{ item.properties.frequency_num }}</span>
+{% endif %}
+{% if item.properties.frequency_type %}
+  <input type="hidden" name="{{ prod_index }}[type_id]" value="{{ item.properties.frequency_type }}" />
+{% endif %}
+{% if item.properties.frequency_type_text %}
+  <span class="bold_ro_frequency_type_text">{{ item.properties.frequency_type_text }}</span>
+{% endif %}
+{% if item.properties.group_id %}
+                {% assign show_paypal = false %}
+  <input type="hidden" name="{{ prod_index }}[group_id]" value="{{ item.properties.group_id }}" />
+{% endif %}
+{% if item.properties._ro_unformatted_price %}
+  <br><span class="bold_ro_discounted_price">Discounted Price</span>
+  <span class="discounted_price_in_cart">{{ item.properties._ro_unformatted_price | money }}</span> <span class="bold_ro_each">each</span>
+{% endif %}
+<!-- bold-ro-liquid -->
+              </div>
+
+              <a class="remove bold-ro-remove" href="/cart/change?line={{ forloop.index }}&amp;quantity=0">&#xe603;</a>
+            </td>
+            <td class="price" data-title="{{ 'general.general.price' | t }}"><span class="money">{{ ro_item_price | money }}</span></td>
+            <td class="quantity" data-title="{{ 'general.general.quantity' | t }}"><input type="text" name="updates[]" id="updates_{{ item.id }}" value="{{ item.quantity }}"></td>
+            <td class="total last" data-title="{{ 'general.general.total' | t }}"><span class="money">{{ item.quantity | times: ro_item_price | money }}</span></td>
+          </tr>
+        {% endfor %}
+      </tbody>
+
+    </table>
+
+    <div class="cart-tools">
+
+      {% if settings.cart-special-instructions %}
+        <div class="cart-instructions">
+          <h2>{{ 'cart.general.special_instructions' | t }}</h2>
+          <textarea placeholder="{{ settings.cart-special-instructions-placeholder }}" name="note">{{ cart.note }}</textarea>
+        </div>
+      {% endif %}
+
+      <div class="cart-totals">
+        <p class="cart-price"><span class="money">{{ ro_cart_total | money }}</span></p>
+        {% if settings.cart-show-shipping-note %}
+          <p class="cart-message">{{ 'cart.general.tax_and_shipping' | t }}</p> 
+        {% endif %}
+<input name="shopify_customer_id" type="hidden" value="{{ customer.id }}" > 
+<input name="email" type="hidden" value="{{ customer.email }}" > 
+<input name="address1" type="hidden" value="{{ customer.default_address.address1 }}" > 
+<input name="address2" type="hidden" value="{{ customer.default_address.address2 }}" > 
+<input name="city" type="hidden" value="{{ customer.default_address.city }}" > 
+<input name="company" type="hidden" value="{{ customer.default_address.company }}" > 
+<input name="country" type="hidden" value="{{ customer.default_address.country }}" > 
+<input name="first_name" type="hidden" value="{{ customer.default_address.first_name }}" > 
+<input name="last_name" type="hidden" value="{{ customer.default_address.last_name }}" > 
+<input name="phone" type="hidden" value="{{ customer.default_address.phone }}" > 
+<input name="province" type="hidden" value="{{ customer.default_address.province }}" > 
+<input name="zip" type="hidden" value="{{ customer.default_address.zip }}" >
+{% include 'bold-ro-cart' %}
+        <input class="cart-update button secondary" type="submit" name="update" value="{{ 'general.general.update' | t }}">
+        <input class="cart-checkout button" type="submit" name="checkout" value="{{ 'cart.general.submit' | t }}">
+
+        {% if additional_checkout_buttons and show_paypal %}
+          <div>{{ content_for_additional_checkout_buttons }}</div>
+        {% endif %}
+      </div>
+
+    </div>
+
+  </form>
+
+  {% if settings.shipping-calculator and cart.requires_shipping %}
+    {% include 'shipping-calculator' %}
+  {% endif %}
+
+{% else %}
+
+  {% capture continueLink %}
+    <a href="{{ shop.url }}/collections/all">{{ 'cart.general.continue_link' | t }}</a>
+  {% endcapture %}
+  <p class="empty">{{ 'cart.general.empty_html' | t: continue_link: continueLink }}</p>
+
+{% endif %}
+
+
+<script>
+$(document).on("click","[name='recurring_radio_btn']", function() {
+
+    if($('.recurring_div').hasClass('bold_active')){
+        $('.additional-checkout-buttons').hide();
+    }else{
+        $('.additional-checkout-buttons').show();
+    }
+});
+
+</script>

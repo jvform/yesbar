@@ -1,0 +1,31 @@
+<h1 class="page-title">{{ blog.title }}</h1>
+
+{% include 'breadcrumbs' %}
+
+<div class="blog-wrapper">
+
+  {% include 'blog-sidebar' %}
+
+  {% paginate blog.articles by settings.articles-per-page %}
+
+    <div class="blog-posts">
+      {% for article in blog.articles %}
+      <!-- locksmith:v3({% include 'locksmith-variables', locksmith_scope: 'subject', locksmith_subject: article %} {% unless locksmith_locked and locksmith_access_denied and locksmith_manual_lock == false %}) -->
+        {% include 'article-list-item' %}
+      <!-- locksmith:v3({% endunless %}) -->
+      {% else %}
+        <span class="empty">{{ 'blogs.blog.empty' | t }}</span>
+      {% endfor %}
+
+      {% if paginate.previous or paginate.next %}
+        {% include 'pagination' %}
+      {% endif %}
+    </div>
+
+  {% endpaginate %}
+
+  {% if settings.blog-promo %}
+    {% include 'blog-promo' %}
+  {% endif %}
+
+</div>
